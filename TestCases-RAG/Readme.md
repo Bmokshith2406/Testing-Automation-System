@@ -1,80 +1,80 @@
-# 🧠 Intelligent Test Case Search Platform – Modular Edition  
-### TestCases-RAG Version 2.0
+# Intelligent Test Case Search Platform – Modular Edition  
+TestCases-RAG Version 2.0
 
 ---
 
-## 🔍 Overview
+## Overview
 
-This project is a **production-grade backend platform** for uploading, enriching, indexing, and semantically searching software test cases using:
+This project is a production-grade backend platform for uploading, enriching, indexing, and semantically searching software test cases using:
 
-✅ **FastAPI** – REST APIs  
-✅ **MongoDB Atlas** – persistence & vector search  
-✅ **SentenceTransformers (all-MiniLM-L6-v2)** – embeddings  
-✅ **Google Gemini** – enrichment, query expansion, re-ranking  
-✅ **JWT Authentication** – role-based access control  
-✅ **Advanced ranking heuristics + A/B testing**  
-✅ **Search caching**  
-✅ **Audit logging + metrics**
+- FastAPI for APIs  
+- MongoDB Atlas for persistence and vector search  
+- SentenceTransformers (all-MiniLM-L6-v2) for embeddings  
+- Google Gemini for enrichment, query expansion, and reranking  
+- JWT authentication with role-based access  
+- Advanced ranking heuristics with A/B testing  
+- Search caching  
+- Audit logging and metrics  
 
-This refactor modularizes the original single-file app into clean layers for easier debugging, scaling, and experimentation workflows.
+This refactor modularizes the original single-file application into clean layers for easier debugging, scaling, and experimentation workflows.
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 
 app/
 ├── main.py                # App startup + lifespan orchestration
 │
-├── core/                  # Global configuration & security
-│   ├── config.py          # Env + constants
+├── core/                  # Global configuration and security
+│   ├── config.py          # Environment variables and constants
 │   ├── logging.py         # Structured logging
 │   ├── cache.py           # In-memory query caching
-│   ├── security.py        # JWT + password hashing
+│   ├── security.py        # JWT and password hashing
 │   └── analytics.py      # Audit logging
 │
 ├── db/
-│   └── mongo.py           # MongoDB connection + helpers
+│   └── mongo.py           # MongoDB connection and helpers
 │
 ├── models/
 │   ├── schemas.py         # Pydantic DTO schemas
 │   └── users.py           # Mongo user CRUD helpers
 │
 ├── services/
-│   ├── embeddings.py     # SentenceTransformer lifecycle + batching
-│   ├── keywords.py       # Keyword extraction & fallback summaries
+│   ├── embeddings.py     # SentenceTransformer lifecycle and batching
+│   ├── keywords.py       # Keyword extraction and fallback summaries
 │   ├── enrichment.py     # Gemini test-case enrichment
 │   ├── expansion.py      # Gemini query expansion
-│   ├── rerank.py          # Gemini reranking
-│   └── ranking.py         # Multi-signal scoring + A/B logic
+│   ├── rerank.py         # Gemini reranking
+│   └── ranking.py        # Multi-signal scoring and A/B testing logic
 │
 ├── routes/
-│   ├── auth.py            # Login / Register APIs
-│   ├── upload.py          # CSV/XLSX ingestion + enrichment + embeddings
-│   ├── search.py          # Hybrid vector + heuristic ranking search
-│   ├── update.py          # Test case updates + reprocessing
-│   └── admin.py           # Admin maintenance + metrics APIs
+│   ├── auth.py            # Login and register APIs
+│   ├── upload.py          # CSV/XLSX ingestion, enrichment, embeddings
+│   ├── search.py          # Hybrid vector and heuristic ranking search
+│   ├── update.py          # Test case updates and reprocessing
+│   └── admin.py           # Admin maintenance and metrics APIs
 │
-└── middleware/            # Optional global middleware (future work)
+└── middleware/            # Optional global middleware (future)
 
 ```
 
 ---
 
-## ⚙️ Setup & Installation
+## Setup and Installation
 
-### ✅ 1. Python Version
+### Python Version
 
 ```
 
-Python 3.10+
+Python 3.10 or later
 
 ````
 
 ---
 
-### ✅ 2. Clone & Setup Virtual Environment
+### Clone and Setup Virtual Environment
 
 ```bash
 git clone <your-repository-url>
@@ -91,7 +91,7 @@ source .venv/bin/activate
 
 ---
 
-### ✅ 3. Install Dependencies
+### Install Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -99,7 +99,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📦 Required Packages
+## Required Packages
 
 Your `requirements.txt` should include:
 
@@ -122,28 +122,27 @@ python-multipart
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
-Create a `.env` file in project root:
+Create a `.env` file in the project root:
 
 ```
 GOOGLE_API_KEY=your-google-api-key
 MONGO_CONNECTION_STRING=your-mongodb-uri
-
-JWT_SECRET_KEY=change-me-in-prod
+JWT_SECRET_KEY=change-me-in-production
 ```
 
 ---
 
-## ✅ MongoDB Requirements
+## MongoDB Configuration
 
-Create a **Vector Search Index** in MongoDB Atlas on the field:
+You must create a Vector Search index in MongoDB Atlas on the field:
 
 ```
 main_vector
 ```
 
-### Vector Index Configuration
+### Vector Index Definition
 
 ```json
 {
@@ -159,7 +158,7 @@ main_vector
 }
 ```
 
-### Index Name (must match exactly)
+### Index Name
 
 ```
 vector_index
@@ -167,9 +166,9 @@ vector_index
 
 ---
 
-## ▶️ Running the App
+## Running the Application
 
-Start the server:
+Start the backend server:
 
 ```bash
 uvicorn app.main:app --reload
@@ -177,7 +176,7 @@ uvicorn app.main:app --reload
 
 ---
 
-### API Base URL
+### API URL
 
 ```
 http://localhost:8000
@@ -185,7 +184,7 @@ http://localhost:8000
 
 ---
 
-### Interactive API Docs
+### Interactive API Documentation
 
 ```
 http://localhost:8000/docs
@@ -193,11 +192,11 @@ http://localhost:8000/docs
 
 ---
 
-## 🔐 Authentication & User Roles
+## Authentication and User Roles
 
 ---
 
-### 📝 Create Account
+### Register
 
 **POST** `/auth/register`
 
@@ -211,10 +210,9 @@ http://localhost:8000/docs
 
 ---
 
-### 🔑 Login
+### Login
 
 **POST** `/auth/login`
-
 Form-encoded request
 
 Response:
@@ -228,9 +226,9 @@ Response:
 
 ---
 
-### 🔓 Use Token
+### Authorization Header
 
-Pass JWT in headers for protected routes:
+Include JWT in protected requests:
 
 ```
 Authorization: Bearer YOUR_TOKEN
@@ -238,28 +236,28 @@ Authorization: Bearer YOUR_TOKEN
 
 ---
 
-### 👥 Role Permissions
+### Role Permissions
 
-| Role   | Allowed actions                              |
-| ------ | -------------------------------------------- |
-| viewer | Search only                                  |
-| editor | Upload, update, delete individual test cases |
-| admin  | Full control + delete-all + metrics          |
+| Role   | Permissions                                   |
+| ------ | --------------------------------------------- |
+| viewer | Search only                                   |
+| editor | Upload, update, delete individual test cases  |
+| admin  | Full control including delete-all and metrics |
 
 ---
 
-## 📤 Uploading Test Cases
+## Uploading Test Cases
 
 ---
 
 ### Endpoint
 
 **POST** `/api/upload`
-*AUTH REQUIRED: `editor` or `admin`*
+Authorization required: `editor` or `admin`
 
 ---
 
-### Accepted file formats
+### Supported Formats
 
 ```
 .csv
@@ -292,18 +290,16 @@ Platform
 
 ---
 
-### File Processing Flow
+### Processing Flow
 
-1. Gemini enrichment → summary + keywords
-2. Batch SentenceTransformer embeddings
-3. Mean vector creation
-4. MongoDB insert + vector indexing
-
----
+1. Gemini summary and keyword enrichment
+2. Batched SentenceTransformer embeddings generation
+3. Mean vector creation for indexing
+4. MongoDB insert and vector registration
 
 ---
 
-## 🔍 Searching Test Cases
+## Searching Test Cases
 
 ---
 
@@ -313,7 +309,7 @@ Platform
 
 ---
 
-### Request Example
+### Example Request
 
 ```json
 {
@@ -331,38 +327,38 @@ Platform
 ### Search Pipeline
 
 ```
-Input Query
-    ↓
-Embedding
-    ↓
-MongoDB $vectorSearch
-    ↓
+Query Input
+   ↓
+Embedding Generation
+   ↓
+MongoDB Vector Search
+   ↓
 Local Signal Fusion Ranker
-    ↓
-(Gemini Re-Ranking – optional)
-    ↓
+   ↓
+Gemini Reranking (optional)
+   ↓
 Diversity Filtering
-    ↓
-Final TOP-K Results
+   ↓
+Final Top-K Results
 ```
 
 ---
 
-## 📊 Scoring Signals
+## Ranking Algorithms
 
 ---
 
-### Ranking A — "Baseline"
+### Variant A – Baseline
 
 ```
 0.60 * Vector similarity
-0.25 * Max cosine similarity
-+ Token match boosts
+0.25 * Maximum cosine similarity
+Token match boosts
 ```
 
 ---
 
-### Ranking B — "Enhanced"
+### Variant B – Enhanced
 
 ```
 0.45 * Vector similarity
@@ -375,7 +371,7 @@ Final TOP-K Results
 
 ---
 
-### Variant selection
+### Usage
 
 ```
 "ranking_variant": "A" | "B"
@@ -383,9 +379,7 @@ Final TOP-K Results
 
 ---
 
----
-
-## 🔄 Updating Records
+## Updating Records
 
 ---
 
@@ -395,45 +389,43 @@ Final TOP-K Results
 
 ---
 
-### Partial Update Example
+### Example Request
 
 ```json
 {
   "feature": "Payments",
   "priority": "Critical",
-  "tags": ["Smoke","API"]
+  "tags": ["Smoke", "API"]
 }
 ```
 
 ---
 
-### Automatic Triggers
+### Automatic Updates
 
-* Gemini re-enrichment (if needed)
-* Re-embedding vectors
-* Vector recomputation
-
----
+* Gemini re-enrichment when applicable
+* Vector regeneration
+* Reindexing
 
 ---
 
-## 👮 Admin APIs
+## Admin APIs
 
 ---
 
-### Get all test cases
+### Retrieve All Test Cases
 
 **GET** `/api/get-all`
 
 ---
 
-### Delete all data (ADMIN ONLY)
+### Delete All Data (admin only)
 
 **POST** `/api/delete-all?confirm=true`
 
 ---
 
-### Delete single test case
+### Delete Single Test Case
 
 **DELETE** `/api/testcase/{id}`
 
@@ -443,9 +435,7 @@ Final TOP-K Results
 
 **GET** `/api/metrics`
 
----
-
-#### Example Response
+Response example:
 
 ```json
 {
@@ -456,13 +446,9 @@ Final TOP-K Results
 
 ---
 
----
+## Audit Logging
 
-## 🧾 Audit Logging
-
-Every **search request** is logged into the **`api_audit_logs`** collection:
-
-Captured fields:
+Every search request is logged in the `api_audit_logs` collection and captures:
 
 * Timestamp
 * Endpoint
@@ -471,79 +457,63 @@ Captured fields:
 * Ranking variant
 * Result count
 
----
+This enables:
 
-### Why this matters
-
-Audit analytics enables:
-
-✅ Quality tracking
-✅ Ranking variant experiments (A/B testing)
-✅ Popular query discovery
-✅ Continuous UX improvement
+* Monitoring system quality
+* A/B ranking experiments
+* Discovery of popular search behavior
+* Search UX optimization
 
 ---
 
----
-
-## 🧠 Development Workflow
+## Development Workflow
 
 ---
 
-### Ranking tuning
+### Ranking Changes
 
-➡ Modify:
-
-```python
+```
 app/services/ranking.py
 ```
 
 ---
 
-### LLM strategies
+### LLM Experimentation
 
-➡ Iterate in:
-
-```python
+```
 app/services/expansion.py
 app/services/rerank.py
 ```
 
 ---
 
-### Schema evolution
+### Schema Updates
 
-➡ Update DTOs in:
-
-```python
+```
 app/models/schemas.py
 ```
 
 ---
 
-### Routing only
+### Routing
 
-➡ Routes go strictly in:
+All endpoint definitions belong strictly in:
 
 ```
 app/routes/
 ```
 
-(No business logic inside routers.)
+Business logic should never reside in route handlers.
 
 ---
 
----
-
-## ✅ Version
+## Version
 
 ```
-TestCases-RAG — Version 2.0
+TestCases-RAG Version 2.0
 ```
 
 ---
 
 ```
-
----
-
+```
