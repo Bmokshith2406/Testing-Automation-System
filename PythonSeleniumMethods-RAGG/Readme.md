@@ -1,80 +1,170 @@
-Intelligent Test Case Search Platform – Modular Edition
-🔍 Overview
+# Python Selenium Methods RAG – Modular Edition  
+Version 1.0
 
-This project is a production-grade backend platform for uploading, enriching, indexing, and semantically searching software test cases using:
+---
 
-✅ FastAPI for APIs
+## Overview
 
-✅ MongoDB Atlas for persistence & vector search
+This project is a production-grade backend platform for ingesting, enriching, indexing, deduplicating, and semantically searching **raw Selenium Python test automation methods** using a Retrieval-Augmented Generation (RAG) architecture.
 
-✅ SentenceTransformers (all-MiniLM-L6-v2) for embeddings
+The system converts scattered Selenium utility scripts into a structured, searchable, reusable knowledge base with intelligent deduplication and ranking powered by Large Language Models and vector embeddings.
 
-✅ Google Gemini for enrichment, query expansion, and reranking
+Core capabilities include:
 
-✅ JWT Authentication with role-based access
+- FastAPI REST APIs
+- MongoDB Atlas persistence with vector search
+- SentenceTransformers (`all-MiniLM-L6-v2`) for embeddings
+- Google Gemini for:
+  - MADL (Method Abstract Description Language) generation
+  - Query normalization
+  - Query expansion
+  - Deduplication verification
+  - LLM-based reranking
+- Centralized Gemini concurrency control via semaphore
+- JWT-based authentication with role management
+- Signal-fusion ranking heuristics with A/B test variants
+- Search result caching
+- Request-level audit logging
+- Metrics collection
 
-✅ Advanced ranking heuristics + A/B testing
+All LLM prompts and runtime parameters are centralized in configuration for easy live experimentation without modifying Python services.
 
-✅ Search caching
+---
 
-✅ Audit logging + metrics
+## System Architecture
 
-This refactor modularizes the original single-file app into clean layers for easier debugging, scaling, and experiment workflows.
+### Ingestion Pipeline
 
-📂 Project Structure
+```
+
+Raw Selenium Method
+↓
+Gemini dedupe summary creation
+↓
+Vector similarity matching vs stored methods
+↓
+Gemini duplicate verification
+↓
+MADL documentation generation
+↓
+Multi-vector embedding creation
+↓
+MongoDB storage + indexing
+
+```
+
+---
+
+### Search Pipeline
+
+```
+
+User Query
+↓
+Query normalization
+↓
+Query expansion
+↓
+Embedding generation
+↓
+MongoDB $vectorSearch
+↓
+Local heuristic ranking
+↓
+Optional Gemini reranking
+↓
+Final Top-K results
+
+```
+
+---
+
+## Project Structure
+
+```
+
 app/
-├── main.py                # App startup + lifespan orchestration
+├── main.py                      # FastAPI initialization and lifecycle
 │
-├── core/                  # Global configuration & security
-│   ├── config.py          # Env + constants
-│   ├── logging.py         # Structured logging
-│   ├── cache.py           # In-memory query caching
-│   ├── security.py        # JWT + password hashing
-│   └── analytics.py      # Audit logging
+├── core/                        # Global configuration and infrastructure logic
+│   ├── config.py               # Environment config and LLM prompts
+│   ├── logging.py              # Structured log formatting
+│   ├── cache.py                # In-memory query caching
+│   ├── security.py             # JWT auth and credential hashing
+│   └── analytics.py            # Search audit + analytics logging
 │
 ├── db/
-│   └── mongo.py           # MongoDB connection + helpers
+│   └── mongo.py                # MongoDB connection and collection helpers
 │
 ├── models/
-│   ├── schemas.py         # Pydantic DTO schemas
-│   └── users.py           # Mongo user CRUD helpers
+│   ├── schemas.py              # Pydantic request/response DTOs
+│   └── users.py                # MongoDB user access helpers
 │
 ├── services/
-│   ├── embeddings.py     # SentenceTransformer lifecycle + batching
-│   ├── keywords.py       # Keyword extraction & fallback summaries
-│   ├── enrichment.py     # Gemini test-case enrichment
-│   ├── expansion.py      # Gemini query expansion
-│   ├── rerank.py          # Gemini reranking
-│   └── ranking.py         # Multi-signal scoring + A/B logic
+│   ├── embeddings.py           # SentenceTransformer embedding pipeline
+│   ├── keywords.py             # Keyword extraction helpers
+│   ├── expansion.py            # Gemini query expansion
+│   ├── ranking.py              # Heuristic signal fusion scoring
+│   ├── rerank.py               # Gemini reranking engine
+│   ├── finalRanking.py         # Final post-processing ranking layer
+│
+│   ├── method_madl.py          # MADL generation logic
+│   ├── dedupe_summary.py       # Gemini dedupe summarization flows
+│   ├── dedupe_search_helper.py# Similarity candidate filtering
+│   ├── dedupe_verifier.py      # LLM duplicate verification
+│   └── gemini_semaphore.py     # Global Gemini rate/concurrency throttle
 │
 ├── routes/
-│   ├── auth.py            # Login / Register APIs
-│   ├── upload.py          # CSV/XLSX ingestion + enrichment + embeddings
-│   ├── search.py          # Hybrid vector + heuristic ranking search
-│   ├── update.py          # Test case updates + reprocessing
-│   └── admin.py           # Admin maintenance + metrics APIs
-│
-└── middleware/            # Optional global middleware (future work)
+│   ├── auth.py                 # Authentication endpoints
+│   ├── upload.py               # Selenium method ingestion
+│   ├── search.py               # Query endpoints
+│   ├── update.py               # MADL updates and re-embedding
+│   └── admin.py                # Maintenance and metrics endpoints
 
-⚙️ Setup & Installation
-✅ 1. Python version
+```
+
+---
+
+## Setup and Installation
+
+### Python Version
+
+```
+
 Python 3.10+
 
-✅ 2. Clone & setup virtual environment
-git clone <your-repository>
+````
+
+---
+
+### Environment Setup
+
+```bash
+git clone <your-repository-url>
 cd <your-repository>
 
 python -m venv .venv
-source .venv/bin/activate        # macOS/Linux
-.venv\Scripts\activate           # Windows
 
-✅ 3. Install dependencies
+# Windows
+.venv\Scripts\activate
+
+# Linux/macOS
+source .venv/bin/activate
+````
+
+---
+
+### Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-📦 Required Packages
+---
 
-Your requirements.txt should include:
+## Required Packages
 
+```
 fastapi
 uvicorn
 motor
@@ -89,20 +179,42 @@ bcrypt==3.2.2
 openpyxl
 google-generativeai
 python-multipart
+```
 
-🔑 Environment Variables
+---
 
-Create a .env file:
+## Environment Configuration
 
-GOOGLE_API_KEY=your-google-api-key
-MONGO_CONNECTION_STRING=your-mongodb-uri
+Create `.env` in project root:
 
-JWT_SECRET_KEY=change-me-in-prod
+```env
+GOOGLE_API_KEY=your-gemini-api-key
+MONGO_CONNECTION_STRING=your-mongodb-atlas-uri
+JWT_SECRET_KEY=change-this-in-production
 
-✅ MongoDB Requirements
+EMBEDDING_MODEL_NAME=all-MiniLM-L6-v2
+VECTOR_INDEX_NAME=vector_index
 
-You must create a Vector Search Index in MongoDB Atlas on the main_vector field:
+GEMINI_RETRIES=3
+GEMINI_RATE_LIMIT_SLEEP=2
+QUERY_EXPANSIONS=6
+```
 
+---
+
+## MongoDB Vector Search Setup
+
+Create a **MongoDB Atlas Vector Search index** on the `main_vector` field.
+
+### Index Name
+
+```
+vector_index
+```
+
+### Vector Index Definition
+
+```json
 {
   "fields": [
     {
@@ -114,255 +226,305 @@ You must create a Vector Search Index in MongoDB Atlas on the main_vector field:
     }
   ]
 }
+```
 
+---
 
+## Running the Application
 
-
-Name the index exactly:
-
-vector_index
-
-▶️ Running the App
-
-Start the backend:
-
+```bash
 uvicorn app.main:app --reload
+```
 
+---
 
-API available at:
+### Local Endpoints
 
+```
 http://localhost:8000
-
-
-Interactive docs:
-
 http://localhost:8000/docs
+```
 
-🔐 Authentication & User Roles
-Create Account
-POST /auth/register
+---
 
+## Authentication
+
+All protected endpoints use JWT bearer authentication.
+
+---
+
+### Register User
+
+**POST /auth/register**
+
+```json
 {
   "username": "admin",
   "password": "test123",
   "role": "admin"
 }
+```
 
-Login
-POST /auth/login
+---
 
+### Login
 
-(form-encoded)
+**POST /auth/login**
 
-Returns JWT:
+Form Body:
 
+```
+username
+password
+```
+
+Response:
+
+```json
 {
-  "access_token": "...",
+  "access_token": "TOKEN",
   "token_type": "bearer"
 }
+```
 
-Use Token
+---
 
-Add to headers:
+### Use Token
 
-Authorization: Bearer YOUR_TOKEN
+```
+Authorization: Bearer TOKEN
+```
 
-Role Permissions
-Role	Allowed actions
-viewer	Search only
-editor	Upload, update, delete individual test cases
-admin	Full control + delete-all + metrics
-📤 Uploading Test Cases
-POST /api/upload
+---
 
+## Role Permissions
 
-Auth required: editor or admin
+| Role   | Permissions                                            |
+| ------ | ------------------------------------------------------ |
+| viewer | Search methods only                                    |
+| editor | Upload methods, update MADL, delete single methods     |
+| admin  | Full access including delete-all and metrics endpoints |
 
-Accepts:
+---
 
-.csv
+## Upload Selenium Methods
 
-.xlsx
+**POST /api/upload-methods**
 
-Required columns
+### Required Role
 
-Test Case ID
+```
+editor or admin
+```
 
-Feature
+### Supported Formats
 
-Test Case Description
+* `.csv`
+* `.xlsx`
 
-Pre-requisites
+### Required Column
 
-Test Step
+```
+Raw Method
+```
 
-Expected Result
+### Ingestion Processing
 
-Step No.
+For each Selenium method:
 
-Optional columns:
+* Gemini dedupe summary generated
 
-Tags – comma-separated
+* Vector similarity candidate search executed
 
-Priority
+* Gemini LLM duplicate verification
 
-Platform
+* Structured MADL JSON created
 
-Processing Flow
+* Four embeddings generated:
 
-File ingestion
+  * `summary_embedding`
+  * `raw_method_embedding`
+  * `madl_embedding`
+  * `main_vector`
 
-Gemini summary + keyword generation
+* Results stored in MongoDB
 
-Batched SentenceTransformer embedding
+---
 
-Mean vector creation for indexing
+## Search API
 
-Mongo insert
+**POST /api/search**
 
-🔍 Searching Test Cases
-POST /api/search
+Sample request:
 
+```json
 {
-  "query": "payment failure",
-  "feature": "Checkout",
-  "tags": ["Regression"],
-  "priority": "High",
-  "platform": "Mobile",
+  "query": "wait until element clickable",
   "ranking_variant": "B"
 }
+```
 
-Search Pipeline
-Input Query
-   ↓
-Embedding
-   ↓
-MongoDB $vectorSearch
-   ↓
-Local signal fusion ranker
-   ↓
-(Gemini re-ranking optional)
-   ↓
-Diversity filtering
-   ↓
-Final TOP-K results
+---
 
-Scoring Signals
+### Ranking Variants
 
-Ranking A ("Baseline")
+#### Variant A (Baseline)
 
+```
 0.60 * Vector similarity
-0.25 * Max cosine similarity
-+ Token match boosts
+0.25 * Cosine similarity
+Lexical token match boosts
+```
 
+---
 
-Ranking B ("Enhanced")
+#### Variant B (Enhanced)
 
+```
 0.45 * Vector similarity
-0.20 * Semantic similarity
+0.20 * Cosine similarity
 0.12 * Keyword overlap
-0.08 * Feature name match
 0.05 * Token density
 0.05 * Popularity weighting
+```
 
+---
 
-Use:
+## Updating Methods
 
-"ranking_variant": "A" | "B"
+**PUT /api/update/{method_id}**
 
-🔄 Updating Records
-PUT /api/update/{doc_id}
+Partial updates apply only to MADL fields.
 
+Automatic processing:
 
-Partial updates supported:
+* Gemini re-enrichment if required
+* Embedding regeneration
+* Main vector recomputation
 
-{
-  "feature": "Payments",
-  "priority": "Critical",
-  "tags": ["Smoke","API"]
-}
+---
 
-Triggers automatic:
+## Administrative Endpoints
 
-Gemini re-enrichment if needed
+### Retrieve All Methods
 
-Re-embedding
+```
+GET /api/get-all-methods
+```
 
-Main vector recalculation
+---
 
-👮 Admin APIs
-Get all test cases
-GET /api/get-all
+### Delete All Methods
 
-Delete all data
+```
 POST /api/delete-all?confirm=true
+```
 
+---
 
-(admin only)
+### Delete Single Method
 
-Delete single case
-DELETE /api/testcase/{id}
+```
+DELETE /api/method/{id}
+```
 
-Metrics
+---
+
+### Metrics
+
+```
 GET /api/metrics
+```
 
+Response example:
 
-Returns:
-
+```json
 {
-  "queries_today": 281,
-  "top_features": ["Login","Checkout"]
+  "queries_today": 42,
+  "top_methods": ["wait_for_clickable", "open_page", "send_keys_safe"]
 }
+```
 
-🧾 Audit Logging
+---
 
-Every search call records:
+## Audit Logging
 
-Timestamp
+All `/api/search` requests are recorded in the `api_audit_logs` collection.
 
-Endpoint
+Captured fields:
 
-User
+* Timestamp
+* Endpoint
+* Request payload
+* Ranking variant
+* Result count
 
-Request payload
+Purpose:
 
-Ranking variant
+* Track ranking quality
+* Enable A/B experimentation feedback
+* Identify popular searches
+* Guide platform tuning
 
-Result count
+---
 
-Mongo collection:
+## Gemini Concurrency Safety
 
-api_audit_logs
+All Gemini calls flow through:
 
-Why this matters
+```
+app/services/gemini_semaphore.py
+```
 
-This enables:
+Default throttle:
 
-✅ Quality monitoring
-✅ Ranking experimentation feedback
-✅ Popular query discovery
-✅ Search UX improvements
+```python
+GEMINI_MAX_CONCURRENCY = 2
+```
 
-🧠 Development Workflow
-Recommended flow
+This prevents quota exhaustion and stabilizes parallel ingestion and search activity.
 
-Implement ranking changes in:
+---
 
+## Development Workflow
+
+### Change prompts or runtime tuning
+
+```
+app/core/config.py
+```
+
+---
+
+### Modify ranking logic
+
+```
 app/services/ranking.py
+```
 
+---
 
-Experiment with LLM strategies in:
+### Update ingestion logic
 
-app/services/expansion.py
-app/services/rerank.py
+```
+app/routes/upload.py
+```
 
+---
 
-Update schema logic in:
+### Adjust embedding behavior
 
-app/models/schemas.py
+```
+app/services/embeddings.py
+```
 
+---
 
-Route wiring only in:
+### Reranking logic
 
-app/routes/
-"# TestCases-RAG-Version-2.0" 
+```
+app/services/finalRanking.py
+```
+
+---
+
