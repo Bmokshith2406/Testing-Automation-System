@@ -1,0 +1,21 @@
+fastapi
+uvicorn[standard]
+
+pydantic
+pydantic-settings
+python-dotenv
+python-multipart
+
+motor
+
+# For your AST-based scanning system
+# (AST is built-in; no libs needed)
+
+# Utility libraries
+aiofiles
+
+# CSV & IO (standard library covers most; but keeping pandas OUT for minimal footprint)
+# No additional libs needed.
+
+# Logging enhancements (optional)
+loguru

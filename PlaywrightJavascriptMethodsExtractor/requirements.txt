@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+motor
+pydantic
+pydantic-settings
+tree-sitter==0.21.0
+tree_sitter_javascript
+dotenv
+tree_sitter_languages
+python-multipart

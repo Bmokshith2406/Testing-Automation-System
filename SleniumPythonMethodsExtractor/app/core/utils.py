@@ -1,0 +1,27 @@
+import time
+from functools import wraps
+from typing import Callable, Any, List, Iterable
+from itertools import chain
+
+
+def measure_time(func: Callable) -> Callable:
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        wrapper.last_duration_ms = round((time.perf_counter() - start) * 1000, 2)
+        return result
+
+    wrapper.last_duration_ms = None
+    return wrapper
+
+
+def safe_decode(raw_bytes: bytes) -> str:
+    try:
+        return raw_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw_bytes.decode("latin-1")
+
+
+def flatten(list_of_lists: Iterable[Iterable[Any]]) -> List[Any]:
+    return list(chain.from_iterable(list_of_lists))
