@@ -3,8 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import extract, extract_folder, health
 from app.middleware.audit import AuditMiddleware
-from app.core.logging import setup_logging
+from app.core.logging import setup_logging, logger
 from app.core.config import get_settings
+from app.db.mongo import check_mongo_connection, close_mongo_connection
 
 # -------------------------------------------------------
 # Initialize logging ONCE at import-time
@@ -23,6 +24,22 @@ def create_app() -> FastAPI:
             "and test logic using a structured AST (Tree-sitter) pipeline."
         ),
     )
+
+    # -------------------------------------------------------
+    # Startup / Shutdown events
+    # -------------------------------------------------------
+    @app.on_event("startup")
+    async def startup_event():
+        ok = await check_mongo_connection()
+        if not ok:
+            logger.warning(
+                "MongoDB NOT connected at startup. "
+                "Audit logs and raw script storage will not work."
+            )
+
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        close_mongo_connection()
 
     # -------------------------------------------------------
     # CORS configuration
@@ -54,5 +71,7 @@ def create_app() -> FastAPI:
     return app
 
 
+# -------------------------------------------------------
 # Application instance
+# -------------------------------------------------------
 app = create_app()

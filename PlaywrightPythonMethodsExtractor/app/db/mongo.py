@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.errors import PyMongoError
 
 from app.core.config import get_settings
 from app.core.logging import logger
@@ -10,10 +11,34 @@ from app.models.schemas import APILog, RawScript
 settings = get_settings()
 
 # --------------------------------------------------------------
-# MongoDB Client Initialization
+# MongoDB Client Initialization with Logging
 # --------------------------------------------------------------
-client = AsyncIOMotorClient(settings.MONGO_URI)
-db = client[settings.MONGO_DB]
+try:
+    client = AsyncIOMotorClient(
+        settings.MONGO_URI,
+        serverSelectionTimeoutMS=5000,  # fail fast
+    )
+    db = client[settings.MONGO_DB]
+    logger.info("MongoDB client initialized")
+
+except PyMongoError as e:
+    logger.critical(f"MongoDB client initialization failed: {e}")
+    raise
+
+
+async def validate_mongo_connection() -> None:
+    """
+    Validate MongoDB connectivity at startup using a ping command.
+    """
+    try:
+        await client.admin.command("ping")
+        logger.info(
+            f"MongoDB connection established successfully "
+            f"(db='{settings.MONGO_DB}')"
+        )
+    except Exception as e:
+        logger.critical(f"MongoDB connection validation failed: {e}")
+        raise
 
 
 def now() -> datetime:
@@ -51,9 +76,6 @@ async def store_raw_script(
     """
     Store uploaded Playwright Python script content for
     auditing, debugging, and traceability.
-
-    The data is validated using Pydantic models before
-    being persisted to MongoDB.
     """
     try:
         document = {

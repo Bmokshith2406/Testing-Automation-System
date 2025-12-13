@@ -1,20 +1,52 @@
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
+
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.errors import PyMongoError
+
 from app.core.config import get_settings
 from app.core.logging import logger
 from app.models.schemas import APILog, RawScript
 
+
 settings = get_settings()
 
-client = AsyncIOMotorClient(settings.MONGO_URI)
-db = client[settings.MONGO_DB]
+# --------------------------------------------------------------
+# MongoDB Client Initialization with Logging
+# --------------------------------------------------------------
+try:
+    client = AsyncIOMotorClient(
+        settings.MONGO_URI,
+        serverSelectionTimeoutMS=5000,  # fail fast
+    )
+    db = client[settings.MONGO_DB]
+    logger.info("MongoDB client initialized")
+
+except PyMongoError as e:
+    logger.critical(f"MongoDB client initialization failed: {e}")
+    raise
 
 
-def now():
+async def validate_mongo_connection() -> None:
+    """
+    Validate MongoDB connectivity using a ping command.
+    Should be called once during application startup.
+    """
+    try:
+        await client.admin.command("ping")
+        logger.info(
+            f"MongoDB connection established successfully "
+            f"(db='{settings.MONGO_DB}')"
+        )
+    except Exception as e:
+        logger.critical(f"MongoDB connection validation failed: {e}")
+        raise
+
+
+def now() -> datetime:
     return datetime.utcnow()
 
 
-async def log_api_call(record: dict):
+async def log_api_call(record: dict) -> None:
     """
     Store API logs safely. Validation errors or DB errors are logged.
     """
@@ -27,7 +59,11 @@ async def log_api_call(record: dict):
         logger.error(f"MongoDB log_api_call failed: {e}")
 
 
-async def store_raw_script(filename: str, content: str, metadata: dict = None):
+async def store_raw_script(
+    filename: str,
+    content: str,
+    metadata: dict | None = None,
+) -> None:
     """
     Store uploaded script text for audit/debugging with Pydantic validation.
     """

@@ -6,7 +6,9 @@ from app.models.schemas import APILog, RawScript
 
 settings = get_settings()
 
+# -------------------------------------------------------
 # MongoDB client (shared across the application)
+# -------------------------------------------------------
 client = AsyncIOMotorClient(settings.MONGO_URI)
 db = client[settings.MONGO_DB]
 
@@ -18,6 +20,24 @@ def now():
     Used across the Playwright JavaScript extraction pipeline.
     """
     return datetime.now(timezone.utc)
+
+
+# -------------------------------------------------------
+# NEW: MongoDB connectivity check
+# -------------------------------------------------------
+async def check_mongo_connection() -> bool:
+    """
+    Verify MongoDB connectivity using a lightweight ping.
+
+    Called during FastAPI startup to confirm Mongo availability.
+    """
+    try:
+        await client.admin.command("ping")
+        logger.info("MongoDB connection successful")
+        return True
+    except Exception as e:
+        logger.error(f"MongoDB connection failed: {e}")
+        return False
 
 
 async def log_api_call(record: dict):
@@ -36,7 +56,11 @@ async def log_api_call(record: dict):
         logger.error(f"MongoDB log_api_call failed: {e}")
 
 
-async def store_raw_script(filename: str, content: str, metadata: dict | None = None):
+async def store_raw_script(
+    filename: str,
+    content: str,
+    metadata: dict | None = None,
+):
     """
     Store uploaded Playwright JavaScript source code (raw) for audit/debugging.
 
@@ -62,3 +86,17 @@ async def store_raw_script(filename: str, content: str, metadata: dict | None = 
 
     except Exception as e:
         logger.error(f"MongoDB store_raw_script failed: {e}")
+
+
+# -------------------------------------------------------
+# OPTIONAL: clean shutdown helper
+# -------------------------------------------------------
+def close_mongo_connection():
+    """
+    Close MongoDB client on application shutdown.
+    """
+    try:
+        client.close()
+        logger.info("MongoDB connection closed")
+    except Exception as e:
+        logger.error(f"MongoDB close failed: {e}")
